@@ -2,7 +2,6 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -20,14 +19,14 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-      const userObj = user.toObject();
-      delete userObj.password;
+    const userObj = user.toObject();
+    delete userObj.password;
 
-      res.json({
-        token,
-        user: userObj
-      });
-   
+    res.json({
+      token,
+      user: userObj,
+    });
+    console.log("role", user.role);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: "Erreur serveur" });

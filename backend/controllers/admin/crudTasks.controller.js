@@ -2,11 +2,11 @@ const Task = require("../../models/task");
 const Project = require("../../models/project");
 const User = require("../../models/user");
 const mongoose = require("mongoose");
-const path = require('path');
+const path = require("path");
 
 exports.getAllTasks = async (req, res) => {
   try {
-    const baseUrl = `${req.protocol}://${req.get('host')}/public/`;
+    const baseUrl = `${req.protocol}://${req.get("host")}/public/`;
     // 1. Mise à jour des tâches en retard
     const now = new Date();
     await Task.bulkWrite([
@@ -15,11 +15,11 @@ exports.getAllTasks = async (req, res) => {
           filter: {
             type: "long",
             deadline: { $lt: now },
-            status: { $nin: ["completed", "late"] }
+            status: { $nin: ["completed", "late"] },
           },
-          update: { $set: { status: "late" } }
-        }
-      }
+          update: { $set: { status: "late" } },
+        },
+      },
     ]);
 
     // 2. Récupération des tâches avec les relations
@@ -37,8 +37,8 @@ exports.getAllTasks = async (req, res) => {
     // 3. Formatage de la réponse avec les chemins complets des images
     const formattedTasks = tasks.map((task) => {
       // Chemin complet pour le logo du projet
-      const projectLogoPath = task.project?.logo 
-         ? `${baseUrl}uploads/projects/originals/${task.project.logo}`
+      const projectLogoPath = task.project?.logo
+        ? `${baseUrl}uploads/projects/originals/${task.project.logo}`
         : null;
 
       // Chemin complet pour la photo de profil
@@ -67,21 +67,19 @@ exports.getAllTasks = async (req, res) => {
 
     res.status(200).json(formattedTasks);
   } catch (err) {
-    res.status(500).json({ 
-      message: "Erreur serveur", 
-      error: err.message 
+    res.status(500).json({
+      message: "Erreur serveur",
+      error: err.message,
     });
   }
 };
 
-
-
 exports.createTask = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
-  
+
   try {
-    const { 
+    const {
       title,
       description,
       type,
@@ -90,20 +88,24 @@ exports.createTask = async (req, res) => {
       projectId,
       assignedToId,
       progress,
-      intervention
+      intervention,
     } = req.body;
 
     // 1. Validation des données
-    if (!title || !type || !projectId ) {
+    if (!title || !type || !projectId) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(400).json({ message: "Title, type and project are required" });
+      return res
+        .status(400)
+        .json({ message: "Title, type and project are required" });
     }
 
     if (type === "long" && !deadline) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(400).json({ message: "Deadline is required for long tasks" });
+      return res
+        .status(400)
+        .json({ message: "Deadline is required for long tasks" });
     }
 
     // 2. Vérification que le projet existe
@@ -130,13 +132,13 @@ exports.createTask = async (req, res) => {
       title,
       description: description || "",
       type,
-      status: status|| "pending",
+      status: status || "pending",
       deadline: type === "long" ? deadline : undefined, //si tu mis tache journaliere avec deadline il va pas se stocker en backend (deadline)
       project: projectId,
       assignedTo: assignedToId || undefined,
       progress: progress || 0,
-      intervention:intervention || "on_site",
-      createdAt: new Date()
+      intervention: intervention || "on_site",
+      createdAt: new Date(),
     });
 
     // 5. Sauvegarde avec transaction
@@ -155,28 +157,26 @@ exports.createTask = async (req, res) => {
         type: savedTask.type,
         status: savedTask.status,
         projectId: savedTask.project,
-        assignedToId: savedTask.assignedTo || null
-      }
+        assignedToId: savedTask.assignedTo || null,
+      },
     });
-
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
-    
+
     if (err.name === "ValidationError") {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Validation error",
-        errors: Object.values(err.errors).map(e => e.message) 
+        errors: Object.values(err.errors).map((e) => e.message),
       });
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       message: "Server error while creating task",
-      error: err.message 
+      error: err.message,
     });
   }
 };
-
 
 exports.updateTask = async (req, res) => {
   const session = await mongoose.startSession();
@@ -193,7 +193,7 @@ exports.updateTask = async (req, res) => {
       projectId,
       assignedToId,
       progress,
-      intervention
+      intervention,
     } = req.body;
 
     // 1. Vérification que la tâche existe
@@ -211,7 +211,10 @@ exports.updateTask = async (req, res) => {
       return res.status(400).json({ message: "Invalid task type" });
     }
 
-    if (status && !["pending", "inProgress", "completed", "late"].includes(status)) {
+    if (
+      status &&
+      !["pending", "inProgress", "completed", "late"].includes(status)
+    ) {
       await session.abortTransaction();
       session.endSession();
       return res.status(400).json({ message: "Invalid task status" });
@@ -226,7 +229,9 @@ exports.updateTask = async (req, res) => {
     if (progress && (progress < 0 || progress > 100)) {
       await session.abortTransaction();
       session.endSession();
-      return res.status(400).json({ message: "Progress must be between 0 and 100" });
+      return res
+        .status(400)
+        .json({ message: "Progress must be between 0 and 100" });
     }
 
     // 3. Vérification du projet (si modification)
@@ -251,13 +256,15 @@ exports.updateTask = async (req, res) => {
 
     // 5. Mise à jour des champs
     if (title) task.title = title;
-    if (description !== undefined) task.description = description;//undefined si le champ description de  formulaire n'est pas envoyer 
+    if (description !== undefined) task.description = description; //undefined si le champ description de  formulaire n'est pas envoyer
     if (type) task.type = type;
     if (status) task.status = status;
     if (deadline) task.deadline = deadline;
-    if (projectId){task.project = projectId };
-    if (assignedToId !== undefined) {
-      task.assignedTo = assignedToId  ; // Permet de désassigner en envoyant null
+    if (projectId) {
+      task.project = projectId;
+    }
+    if (assignedToId) {
+      task.assignedTo = assignedToId; // Permet de désassigner en envoyant null
     }
     if (progress !== undefined) task.progress = progress;
     if (intervention) task.intervention = intervention;
@@ -269,7 +276,11 @@ exports.updateTask = async (req, res) => {
     }
 
     // 7. Gestion automatique du statut "late"
-    if (task.deadline && new Date() > task.deadline && task.status !== "completed") {
+    if (
+      task.deadline &&
+      new Date() > task.deadline &&
+      task.status !== "completed"
+    ) {
       task.status = "late";
     }
 
@@ -295,30 +306,29 @@ exports.updateTask = async (req, res) => {
         progress: updatedTask.progress,
         intervention: updatedTask.intervention,
         createdAt: updatedTask.createdAt,
-        updatedAt: updatedTask.updatedAt
-      }
+        updatedAt: updatedTask.updatedAt,
+      },
     });
-
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
 
     if (err.name === "ValidationError") {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Validation error",
-        errors: Object.values(err.errors).map(e => e.message) 
+        errors: Object.values(err.errors).map((e) => e.message),
       });
     }
 
     if (err.name === "CastError") {
-      return res.status(400).json({ 
-        message: "Invalid ID format" 
+      return res.status(400).json({
+        message: "Invalid ID format",
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Server error while updating task",
-      error: err.message 
+      error: err.message,
     });
   }
 };
@@ -347,23 +357,29 @@ exports.deleteTask = async (req, res) => {
     const project = await Project.findById(projectId).session(session);
     if (project) {
       // Récupérer toutes les tâches restantes du projet
-      const remainingTasks = await Task.find({ project: projectId }).session(session);
-      
+      const remainingTasks = await Task.find({ project: projectId }).session(
+        session
+      );
+
       if (remainingTasks.length > 0) {
         // Calculer la nouvelle progression
-        const completedCount = remainingTasks.filter(t => t.status === 'completed').length;
-        project.progression = Math.round((completedCount / remainingTasks.length) * 100);
-        
+        const completedCount = remainingTasks.filter(
+          (t) => t.status === "completed"
+        ).length;
+        project.progression = Math.round(
+          (completedCount / remainingTasks.length) * 100
+        );
+
         // Mettre à jour le statut du projet si nécessaire
         if (project.progression === 100) {
-          project.status = 'completed';
-        } else if (project.status === 'completed') {
-          project.status = 'active';
+          project.status = "completed";
+        } else if (project.status === "completed") {
+          project.status = "active";
         }
       } else {
         // Si plus de tâches, réinitialiser la progression
         project.progression = 0;
-        project.status = 'active';
+        project.status = "active";
       }
 
       await project.save({ session });
@@ -376,9 +392,8 @@ exports.deleteTask = async (req, res) => {
     res.status(200).json({
       message: "Tâche supprimée avec succès",
       affectedProject: projectId,
-      newProgression: project?.progression || 0
+      newProgression: project?.progression || 0,
     });
-
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -387,13 +402,9 @@ exports.deleteTask = async (req, res) => {
       return res.status(400).json({ message: "ID de tâche invalide" });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Erreur lors de la suppression de la tâche",
-      error: err.message 
+      error: err.message,
     });
   }
 };
-
-
-
-
