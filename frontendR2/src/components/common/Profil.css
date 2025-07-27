@@ -1,0 +1,177 @@
+/***************************/
+/* Profil.css */
+
+/* Styles de base */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.profil-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin-left: 20rem; /* Espace pour la navbar */
+  transition: margin-left 0.3s ease;
+}
+
+.background {
+  position: fixed;
+  top: 0;
+  left: 20rem;
+  right: 0;
+  height: 50vh;
+  background: linear-gradient(135deg, #fcfbfb 0%, #fd8989 100%);
+  z-index: 0;
+  transition: left 0.3s ease, width 0.3s ease;
+}
+
+.profil-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 700px;
+  margin: 5rem auto;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  height: 50rem;
+  top: 6rem;
+  margin-right: 35rem;
+}
+
+.profil-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profil-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  margin-top: -75px;
+  background-color: #f5f5f5;
+  margin-top: 2rem;
+}
+
+.profil-name {
+  margin: 1rem 0 0.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1rem;
+  color: #333;
+}
+
+.profil-position {
+  color: #666;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profil-details {
+  padding: 0 1.5rem;
+}
+
+.profil-details p {
+  margin: 1rem 0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.profil-details strong {
+  color: #333;
+  min-width: 100px;
+  display: inline-block;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .profil-container {
+    margin-left: 0rem;
+  }
+
+  .background {
+    left: 0;
+  }
+
+  .profil-card {
+    width: 80%;
+    margin: 3rem auto;
+    top: 6rem;
+    height: 50rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .profil-card {
+    padding: 1.5rem;
+    height: 40rem;
+    width: 50rem;
+    margin-top: 14rem;
+    padding-bottom: 10rem;
+    margin: 14rem auto;
+  }
+
+  .profil-photo {
+    width: 120px;
+    height: 120px;
+    margin-top: 20px;
+  }
+
+  .profil-name {
+    font-size: 1.7rem;
+  }
+
+  .profil-position {
+    font-size: 1rem;
+  }
+
+  .profil-details p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profil-card {
+    width: 85%;
+    padding: 2rem;
+    top: 10rem;
+    height: 45rem;
+  }
+
+  .profil-photo {
+    width: 100px;
+    height: 100px;
+    margin-top: 10px;
+  }
+
+  .profil-name {
+    font-size: 1.5rem;
+  }
+
+  .profil-details {
+    padding: 0 0.5rem;
+  }
+
+  .profil-details p {
+    display: flex;
+    font-size: 1rem;
+  }
+
+  .profil-details strong {
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+}

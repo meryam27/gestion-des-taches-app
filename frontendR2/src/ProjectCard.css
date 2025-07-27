@@ -1,0 +1,41 @@
+.project-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.project-card.expanded {
+  background-color: #f9fafb;
+  transform: scale(1.02);
+}
+
+.project-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 16px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.card-details {
+  margin-top: 10px;
+  font-size: 0.95em;
+  color: #333;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}

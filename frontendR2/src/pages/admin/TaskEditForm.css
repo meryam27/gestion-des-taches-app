@@ -1,0 +1,269 @@
+/* TaskEdit.css */
+
+/* Variables de couleurs modernes */
+:root {
+  --primary: #e3d5ca;
+  --secondary: #d5bdaf;
+  --accent: #a68a64;
+  --dark: #4a4a48;
+  --light: #f5ebe0;
+  --white: #ffffff;
+  --error: #e56b6f;
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Reset et styles de base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Overlay plein écran */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 2rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Formulaire principal - prend 90% de la largeur jusqu'à 800px */
+.add-task-form {
+  background-color: var(--white);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid var(--secondary);
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* En-tête */
+.add-task-form h2 {
+  color: var(--dark);
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.add-task-form h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background-color: var(--accent);
+}
+
+/* Bouton de fermeture */
+.close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 1.8rem;
+  color: var(--dark);
+  cursor: pointer;
+  transition: var(--transition);
+  background: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: rotate(90deg);
+}
+
+/* Grille responsive pour les champs */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+/* Styles des champs */
+.add-task-form label {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--dark);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.add-task-form input,
+.add-task-form select,
+.add-task-form textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--secondary);
+  border-radius: 8px;
+  background-color: var(--white);
+  color: var(--dark);
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.add-task-form input:focus,
+.add-task-form select:focus,
+.add-task-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(166, 138, 100, 0.2);
+}
+
+.add-task-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Message d'erreur */
+.error-message {
+  background-color: rgba(229, 107, 111, 0.1);
+  color: var(--error);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--error);
+  grid-column: 1 / -1;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Boutons */
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1rem;
+  min-width: 150px;
+  text-align: center;
+}
+
+.submit-btn {
+  background-color: rgb(221, 229, 221);
+  color: var(--white);
+  border: none;
+}
+
+.submit-btn:hover {
+  background-color: #8a6d4b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166, 138, 100, 0.3);
+}
+
+.cancel-btn {
+  background-color: transparent;
+  color: var(--dark);
+  border: 1px solid var(--secondary);
+}
+
+.cancel-btn:hover {
+  background-color: rgba(213, 189, 175, 0.1);
+  border-color: var(--accent);
+}
+
+/* Animation pour les champs obligatoires */
+.required-field::after {
+  content: "*";
+  color: var(--error);
+  margin-left: 4px;
+}
+
+/* Responsive amélioré */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .add-task-form {
+    padding: 1.5rem;
+    width: 95%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-buttons {
+    justify-content: center;
+  }
+
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-task-form {
+    padding: 1.5rem 1rem;
+  }
+
+  .add-task-form h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .close-btn {
+    top: 1rem;
+    right: 1rem;
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.7",
+    "toast": "^0.5.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

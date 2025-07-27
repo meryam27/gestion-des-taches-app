@@ -1,0 +1,266 @@
+/* Styles de base */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.project-modal {
+  background: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.7rem;
+  cursor: pointer;
+  color: #666;
+}
+
+/* Formulaire */
+.project-form {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #444;
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Sélection employés */
+.employee-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.employee-select-btn {
+  padding: 10px 15px;
+  background-color: #f0f4f8;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  color: #555;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.employee-select-btn:hover {
+  background-color: #e1e8f0;
+  border-color: #999;
+}
+
+.selected-employees-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.employee-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f5f7fa;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.employee-preview img {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.more-employees {
+  background: #e2e8f0;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+/* Upload fichier */
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-upload-label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-upload-input {
+  display: none;
+}
+
+.file-upload-button {
+  padding: 8px 15px;
+  background: #4a6fa5;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.file-upload-button:hover {
+  background: #3a5a8f;
+}
+
+.file-upload-name {
+  font-size: 0.9rem;
+  color: #666;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-upload-remove {
+  background: #f8d7da;
+  color: #721c24;
+  border: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Boutons actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.cancel-btn {
+  padding: 10px 20px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #e9ecef;
+}
+
+.submit-btn {
+  padding: 10px 20px;
+  background: #4a6fa5;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background: #3a5a8f;
+}
+
+.submit-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Messages */
+.error-message {
+  padding: 10px;
+  background: #f8d7da;
+  color: #721c24;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.success-message {
+  padding: 10px;
+  background: #d4edda;
+  color: #155724;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
