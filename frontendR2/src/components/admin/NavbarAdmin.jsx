@@ -4,12 +4,12 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 import defaultPhoto from "../../assets/images/profil-default.jpeg";
-
+import { useNavigate } from "react-router-dom";
 const NavbarAdmin = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profil, setProfil] = useState({});
   const toggleMenu = () => setMenuOpen(!menuOpen);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
@@ -26,7 +26,10 @@ const NavbarAdmin = () => {
     profil.profilePhoto && profil.profilePhoto !== "default-avatar.png"
       ? profil.profilePhoto
       : defaultPhoto;
-
+  const handelLogOut = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
   return (
     <>
       {/* Bouton menu pour petits écrans */}
@@ -84,7 +87,9 @@ const NavbarAdmin = () => {
         </div>
 
         <div className="deconnexion text-body-secondary">
-          <button>Déconnexion</button>
+          <button type="button" onClick={handelLogOut}>
+            Déconnexion
+          </button>
         </div>
       </div>
     </>
