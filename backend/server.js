@@ -15,6 +15,7 @@ const employeDashboard = require("./routes/employee/dashboard_employee.routes");
 const projectEmployeRoute = require("./routes/employee/projects.routes");
 const taskEmployeRoute = require("./routes/employee/task.routes");
 const getEmployeTask = require("./routes/employee/task.routes");
+const getUsersStats = require("./routes/employee/dashboard_employee.routes");
 const app = express();
 
 dotenv.config();
@@ -33,8 +34,9 @@ app.use("/api/admin/tasks", tasksRoutes);
 app.use("/api/employee", employeDashboard);
 app.use("/public", express.static("public"));
 //////////////ESPACE EMPLOYE ///////////////////////////
+app.use("/api/employee/dashboard", getUsersStats);
 app.use("/api/employee/projects", projectEmployeRoute);
 app.use("/api/employee/tasks", taskEmployeRoute);
-app.use("/api/employees/tasks", getEmployeTask);
+app.use("/api/employee/tasks", getEmployeTask);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Serveur démarré sur le port ${PORT}`));
