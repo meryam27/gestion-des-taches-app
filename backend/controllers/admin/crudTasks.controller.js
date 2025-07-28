@@ -138,17 +138,15 @@ exports.createTask = async (req, res) => {
       assignedTo: assignedToId || undefined,
       progress: progress || 0,
       intervention: intervention || "on_site",
+      createdBy: req.user._id,
       createdAt: new Date(),
     });
 
-    // 5. Sauvegarde avec transaction
     const savedTask = await newTask.save({ session });
 
-    // 6. Commit de la transaction
     await session.commitTransaction();
     session.endSession();
 
-    // 7. Réponse avec les IDs
     res.status(201).json({
       message: "Task created successfully",
       task: {
@@ -158,6 +156,7 @@ exports.createTask = async (req, res) => {
         status: savedTask.status,
         projectId: savedTask.project,
         assignedToId: savedTask.assignedTo || null,
+        createdBy: savedTask.createdBy,
       },
     });
   } catch (err) {
@@ -177,7 +176,6 @@ exports.createTask = async (req, res) => {
     });
   }
 };
-
 exports.updateTask = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -196,7 +194,6 @@ exports.updateTask = async (req, res) => {
       intervention,
     } = req.body;
 
-    // 1. Vérification que la tâche existe
     const task = await Task.findById(id).session(session);
     if (!task) {
       await session.abortTransaction();
@@ -204,7 +201,6 @@ exports.updateTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    // 2. Validation des données
     if (type && !["daily", "long"].includes(type)) {
       await session.abortTransaction();
       session.endSession();
@@ -234,7 +230,6 @@ exports.updateTask = async (req, res) => {
         .json({ message: "Progress must be between 0 and 100" });
     }
 
-    // 3. Vérification du projet (si modification)
     if (projectId) {
       const projectExists = await Project.findById(projectId).session(session);
       if (!projectExists) {
@@ -244,7 +239,6 @@ exports.updateTask = async (req, res) => {
       }
     }
 
-    // 4. Vérification de l'utilisateur assigné (si modification)
     if (assignedToId) {
       const userExists = await User.findById(assignedToId).session(session);
       if (!userExists) {
@@ -254,9 +248,8 @@ exports.updateTask = async (req, res) => {
       }
     }
 
-    // 5. Mise à jour des champs
     if (title) task.title = title;
-    if (description !== undefined) task.description = description; //undefined si le champ description de  formulaire n'est pas envoyer
+    if (description !== undefined) task.description = description;
     if (type) task.type = type;
     if (status) task.status = status;
     if (deadline) task.deadline = deadline;
@@ -270,12 +263,10 @@ exports.updateTask = async (req, res) => {
     if (intervention) task.intervention = intervention;
     task.updatedAt = new Date();
 
-    // 6. Gestion spéciale pour les tâches quotidiennes
     if (task.type === "daily") {
-      task.deadline = undefined; // On supprime la deadline pour les tâches quotidiennes
+      task.deadline = undefined;
     }
 
-    // 7. Gestion automatique du statut "late"
     if (
       task.deadline &&
       new Date() > task.deadline &&
@@ -284,14 +275,11 @@ exports.updateTask = async (req, res) => {
       task.status = "late";
     }
 
-    // 8. Sauvegarde de la tâche mise à jour
     const updatedTask = await task.save({ session });
 
-    // 9. Commit de la transaction
     await session.commitTransaction();
     session.endSession();
 
-    // 10. Réponse avec la tâche mise à jour
     res.status(200).json({
       message: "Task updated successfully",
       task: {

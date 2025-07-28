@@ -1,7 +1,419 @@
+
 const Project = require("../../models/project");
 const Task = require("../../models/task");
 const User = require("../../models/user");
 const mongoose = require("mongoose");
+
+// Fonction utilitaire pour générer des dates manquantes
+const fillMissingDates = (data, startDate, endDate, format) => {
+  const dateMap = Object.fromEntries(data.map((d) => [d.date, d]));
+  const dates = [];
+  let current = new Date(startDate);
+
+  while (current <= endDate) {
+    const dateStr = current.toISOString().slice(0, 10);
+    dates.push(
+      dateMap[dateStr] || {
+        date: dateStr,
+        pourcentage: 0,
+        nombre: "0/0",
+        completed: 0,
+        total: 0,
+      }
+    );
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+};
+
+// Statistiques quotidiennes
+exports.getDailyStats = async (req, res) => {
+  try {
+    const { date } = req.query; // Format: YYYY-MM-DD
+    const userId = req.user._id;
+
+    const selectedDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const stats = await Task.aggregate([
+      {
+        $match: {
+          assignedTo: userId,
+          createdAt: { $gte: startOfDay, $lte: endOfDay },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+          },
+          inProgress: {
+            $sum: { $cond: [{ $eq: ["$status", "inProgress"] }, 1, 0] },
+          },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          late: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$status", "completed"] },
+                    { $lt: ["$deadline", new Date()] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          avgProgress: { $avg: "$progress" },
+        },
+      },
+    ]);
+
+    const result = stats[0] || {
+      total: 0,
+      completed: 0,
+      inProgress: 0,
+      pending: 0,
+      late: 0,
+      avgProgress: 0,
+    };
+
+    res.json({
+      date: selectedDate.toISOString().slice(0, 10),
+      stats: {
+        ...result,
+        completionRate:
+          result.total > 0
+            ? Math.round((result.completed / result.total) * 100)
+            : 0,
+      },
+      tasks: await Task.find({
+        assignedTo: userId,
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
+      }).sort({ createdAt: -1 }),
+    });
+  } catch (err) {
+    console.error("[Daily Stats Controller] Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la récupération des statistiques quotidiennes",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
+// Statistiques mensuelles
+exports.getMonthlyStats = async (req, res) => {
+  try {
+    const { year, month } = req.query; // Format: YYYY, MM (1-12)
+    const userId = req.user._id;
+
+    const selectedYear = parseInt(year) || new Date().getFullYear();
+    const selectedMonth = parseInt(month) || new Date().getMonth() + 1;
+
+    const startDate = new Date(selectedYear, selectedMonth - 1, 1);
+    const endDate = new Date(selectedYear, selectedMonth, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Stats quotidiennes pour le mois
+    const dailyStats = await Task.aggregate([
+      {
+        $match: {
+          assignedTo: userId,
+          createdAt: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          total: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+          },
+          inProgress: {
+            $sum: { $cond: [{ $eq: ["$status", "inProgress"] }, 1, 0] },
+          },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          late: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$status", "completed"] },
+                    { $lt: ["$deadline", new Date()] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          avgProgress: { $avg: "$progress" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          date: "$_id",
+          total: 1,
+          completed: 1,
+          inProgress: 1,
+          pending: 1,
+          late: 1,
+          avgProgress: 1,
+          completionRate: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              {
+                $round: [
+                  { $multiply: [{ $divide: ["$completed", "$total"] }, 100] },
+                  0,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      { $sort: { date: 1 } },
+    ]);
+
+    // Stats globales pour le mois
+    const monthlyStats = await Task.aggregate([
+      {
+        $match: {
+          assignedTo: userId,
+          createdAt: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+          },
+          inProgress: {
+            $sum: { $cond: [{ $eq: ["$status", "inProgress"] }, 1, 0] },
+          },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          late: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$status", "completed"] },
+                    { $lt: ["$deadline", new Date()] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          avgProgress: { $avg: "$progress" },
+        },
+      },
+    ]);
+
+    const filledDailyStats = fillMissingDates(
+      dailyStats,
+      startDate,
+      endDate,
+      "%Y-%m-%d"
+    );
+
+    res.json({
+      month: `${selectedYear}-${selectedMonth.toString().padStart(2, "0")}`,
+      stats: monthlyStats[0] || {
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        pending: 0,
+        late: 0,
+        avgProgress: 0,
+        completionRate: 0,
+      },
+      dailyStats: filledDailyStats,
+    });
+  } catch (err) {
+    console.error("[Monthly Stats Controller] Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la récupération des statistiques mensuelles",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
+
+exports.getYearlyStats = async (req, res) => {
+  try {
+    const { year } = req.query; 
+    const userId = req.user._id;
+
+    const selectedYear = parseInt(year) || new Date().getFullYear();
+    const startDate = new Date(selectedYear, 0, 1);
+    const endDate = new Date(selectedYear, 11, 31);
+    endDate.setHours(23, 59, 59, 999);
+
+    // Stats mensuelles pour l'année
+    const monthlyStats = await Task.aggregate([
+      {
+        $match: {
+          assignedTo: userId,
+          createdAt: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m", date: "$createdAt" },
+          },
+          total: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+          },
+          inProgress: {
+            $sum: { $cond: [{ $eq: ["$status", "inProgress"] }, 1, 0] },
+          },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          late: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$status", "completed"] },
+                    { $lt: ["$deadline", new Date()] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          avgProgress: { $avg: "$progress" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id",
+          total: 1,
+          completed: 1,
+          inProgress: 1,
+          pending: 1,
+          late: 1,
+          avgProgress: 1,
+          completionRate: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              {
+                $round: [
+                  { $multiply: [{ $divide: ["$completed", "$total"] }, 100] },
+                  0,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      { $sort: { month: 1 } },
+    ]);
+
+    // Stats globales pour l'année
+    const yearlyStats = await Task.aggregate([
+      {
+        $match: {
+          assignedTo: userId,
+          createdAt: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          completed: {
+            $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] },
+          },
+          inProgress: {
+            $sum: { $cond: [{ $eq: ["$status", "inProgress"] }, 1, 0] },
+          },
+          pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+          late: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$status", "completed"] },
+                    { $lt: ["$deadline", new Date()] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          avgProgress: { $avg: "$progress" },
+        },
+      },
+    ]);
+
+    // Remplir les mois manquants
+    const allMonths = Array.from({ length: 12 }, (_, i) => {
+      const month = (i + 1).toString().padStart(2, "0");
+      return `${selectedYear}-${month}`;
+    });
+
+    const monthMap = Object.fromEntries(monthlyStats.map((m) => [m.month, m]));
+    const filledMonthlyStats = allMonths.map(
+      (month) =>
+        monthMap[month] || {
+          month,
+          total: 0,
+          completed: 0,
+          inProgress: 0,
+          pending: 0,
+          late: 0,
+          avgProgress: 0,
+          completionRate: 0,
+        }
+    );
+
+    res.json({
+      year: selectedYear,
+      stats: yearlyStats[0] || {
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        pending: 0,
+        late: 0,
+        avgProgress: 0,
+        completionRate: 0,
+      },
+      monthlyStats: filledMonthlyStats,
+    });
+  } catch (err) {
+    console.error("[Yearly Stats Controller] Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Erreur lors de la récupération des statistiques annuelles",
+      error: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+};
+
+// Dashboard utilisateur (version originale avec quelques améliorations)
 exports.getUserStats = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -9,8 +421,7 @@ exports.getUserStats = async (req, res) => {
     const startDate = new Date();
     startDate.setDate(today.getDate() - 6);
 
-    // -------------------------------
-    //  Tâches journalières  de l'employé
+    // Tâches journalières de l'employé
     const rawDaily = await Task.aggregate([
       {
         $match: {
@@ -27,7 +438,7 @@ exports.getUserStats = async (req, res) => {
           total: { $sum: 1 },
           completed: {
             $sum: {
-              $cond: [{ $eq: ["$status", "completed"] }, 1, 0], // si status = completed on donne 1 si non 0
+              $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
             },
           },
         },
@@ -59,7 +470,7 @@ exports.getUserStats = async (req, res) => {
       },
     ]);
 
-    //  Ajouter les jours manquants
+    // Ajouter les jours manquants
     const getLastNDays = (n) => {
       const dates = [];
       for (let i = n - 1; i >= 0; i--) {
@@ -155,8 +566,7 @@ exports.getUserStats = async (req, res) => {
       maxProgression: 0,
     };
 
-    // -------------------------------
-    // 🔎 3. Activités récentes & critiques
+    // Activités récentes & critiques
     const [recentActivities, criticalTasks] = await Promise.all([
       Task.find({ assignedTo: userId })
         .sort({ updatedAt: -1 })
@@ -207,9 +617,7 @@ exports.getUserStats = async (req, res) => {
     }));
 
     // -------------------------------
-    //
-    const userProjects = await Project.find({ members: userId }); // Si tu as une liste de membres
-    // overAllProgression sert a savoir l'avancement d'un employé par rapport à ses taches
+    const userProjects = await Project.find({ members: userId });
     const overallProgression =
       userProjects.length > 0
         ? Math.round(
