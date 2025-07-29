@@ -54,13 +54,6 @@ const taskSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  starredBy: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: [],
-    },
-  ],
 });
 
 // Ajoutez ceci après la définition de taskSchema
@@ -127,6 +120,7 @@ taskSchema.pre("save", function (next) {
   if (
     this.deadline &&
     new Date() > this.deadline &&
+    this.type === "long" &&
     this.status !== "completed"
   ) {
     this.status = "late";

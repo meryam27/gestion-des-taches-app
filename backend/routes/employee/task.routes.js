@@ -6,10 +6,5 @@ const { roleMiddleware } = require("../../middlewares/role.middleware");
 
 router.get("/", authMiddleware, taskController.getEmployeTask);
 router.post("/create", authMiddleware, taskController.createDailyTask);
-router.patch(
-  "/:id/toggle-star",
-  authMiddleware,
-  roleMiddleware("employee"),
-  taskController.toggleStar
-);
+
 module.exports = router;

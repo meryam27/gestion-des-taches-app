@@ -13,8 +13,7 @@ const ProjectEmployePage = () => {
   const [sortOption, setSortOption] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {

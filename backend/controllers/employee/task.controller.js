@@ -30,24 +30,3 @@ exports.createDailyTask = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-exports.toggleStar = async (req, res) => {
-  const { id } = req.params;
-  const userId = req.user._id;
-  try {
-    const task = await Task.findById(id);
-    if (!task) {
-      return res.status(404).json({ message: "tache non trouvé" });
-    }
-    const index = task.starredBy.indexOf(userId);
-    if (index === -1) {
-      task.starredBy.push(userId);
-    } else {
-      task.starredBy.splice(index, 1);
-    }
-    await task.save();
-    res.status(200).json({ message: "Done", starredBy: task.starredBy });
-  } catch (err) {
-    res.status(500).json({ message: "Erreur serveur", error: err.message });
-  }
-};
