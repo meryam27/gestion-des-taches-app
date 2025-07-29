@@ -111,6 +111,7 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
         progress: 0,
         intervention: "on_site",
       });
+      console.log("tache", response.data.task);
     } catch (err) {
       setError(err.response?.data?.message || "Erreur serveur");
       console.error(err.response?.data);

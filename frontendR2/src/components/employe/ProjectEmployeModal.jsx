@@ -1,44 +1,22 @@
 import React, { useEffect, useState } from "react";
 import defaultProject from "../../assets/images/project-default.jpg";
 import defaultProfil from "../../assets/images/profil-default.jpeg";
-import axios from "axios";
-import "./ProjectModal.css";
-
-const ProjectModal = ({ project, onClose }) => {
-  const [detailProject, setDetailProject] = useState(null);
-
-  useEffect(() => {
-    if (!project || !project._id) return;
-
-    axios
-      .get(`http://localhost:5001/api/admin/projects/${project._id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((res) => {
-        setDetailProject(res.data.data); // Pas besoin de .data après !
-      })
-      .catch((err) => {
-        console.error("Erreur lors du chargement du projet:", err.message);
-      });
-  }, [project]);
-
-  if (!detailProject) return null;
-  // destructuration directe
+const ProjectEmployeModal = ({ project, onClose }) => {
   const {
     assignedEmployees = [],
     city,
     company,
     description,
-    logoUrl,
+    logo,
     name,
     priority,
     progression,
     startDate,
     status,
-  } = detailProject;
-  console.log("1", project);
+    createdAt,
+    updatedAt,
+  } = project;
+  console.log("employes", project);
   return (
     <div
       className="modal-overlay-project"
@@ -53,36 +31,49 @@ const ProjectModal = ({ project, onClose }) => {
         <button className="modal-close-project" onClick={onClose}>
           &times;
         </button>
-
         <div className="modal-header">
-          <img
-            src={logoUrl || defaultProject}
-            alt="Logo du projet"
-            className="modal-logo"
-          />
+          {logo ? (
+            <img
+              src={`http://localhost:5001/public/${logo}`}
+              alt="Logo du projet"
+              className="modal-logo"
+            />
+          ) : (
+            <img
+              src={defaultProject}
+              alt="Logo du projet"
+              className="modal-logo"
+            />
+          )}
+
           <div className="modal-title-container-projet">
             <h2 className="modal-title">{name}</h2>
             <p className="modal-subtitle">
               {company} • {city}
             </p>
-            <p className="modal-subtitle small">Début : {startDate}</p>
+            <p className="modal-subtitle small">
+              Début : {startDate.slice(0, 10)}
+            </p>
           </div>
         </div>
-
         <p className="modal-description">
           {description || "Aucune description disponible."}
         </p>
-
+        <div className="modal-section">
+          <strong>Crée le :</strong>
+          <span>{createdAt.slice(0, 10)}</span>
+        </div>{" "}
+        <div className="modal-section">
+          <strong>Mis à jour le :</strong> <span>{updatedAt.slice(0, 10)}</span>
+        </div>{" "}
         <div className="modal-section">
           <strong>Status :</strong>{" "}
           <span className={`badge status ${status}`}>{status}</span>
         </div>
-
         <div className="modal-section">
           <strong>Priorité :</strong>{" "}
           <span className={`badge priority ${priority}`}>{priority}</span>
         </div>
-
         <div className="modal-section">
           <strong>Progression :</strong>
           <div className="progress-bar">
@@ -93,7 +84,6 @@ const ProjectModal = ({ project, onClose }) => {
           </div>
           <span>{progression}%</span>
         </div>
-
         <div className="modal-section">
           <strong>Équipe assignée :</strong>
           <div className="team-container">
@@ -137,4 +127,4 @@ const ProjectModal = ({ project, onClose }) => {
   );
 };
 
-export default ProjectModal;
+export default ProjectEmployeModal;

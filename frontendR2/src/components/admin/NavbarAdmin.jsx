@@ -28,7 +28,7 @@ const NavbarAdmin = () => {
       : defaultPhoto;
   const handelLogOut = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
   return (
     <>

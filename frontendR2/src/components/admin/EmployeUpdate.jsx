@@ -184,6 +184,7 @@ import {
   FiBriefcase,
   FiCreditCard,
 } from "react-icons/fi";
+import axios from "axios";
 import "./EmployeUpdate.css";
 
 const EmployeUpdate = ({ employe, onClose, onUpdate }) => {
@@ -199,6 +200,11 @@ const EmployeUpdate = ({ employe, onClose, onUpdate }) => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
   const [removePhoto, setRemovePhoto] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetPasswordMessage, setResetPasswordMessage] = useState("");
+  const [resetPasswordError, setResetPasswordError] = useState("");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (employe) {
@@ -217,7 +223,7 @@ const EmployeUpdate = ({ employe, onClose, onUpdate }) => {
       }
     }
   }, [employe]);
-  console.log("employe", employe);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -242,32 +248,6 @@ const EmployeUpdate = ({ employe, onClose, onUpdate }) => {
     }
   };
 
-  /*
-const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  const formDataToSend = new FormData();
-
-  // 1. Ajouter tous les champs sauf profilePhoto (géré séparément)
-  Object.keys(formData).forEach(key => {
-    if (key !== 'profilePhoto' && formData[key] !== null) {
-      formDataToSend.append(key, formData[key]);
-    }
-  });
-
-  // 2. Gestion spéciale de la photo
-  if (formData.profilePhoto instanceof File) {
-    formDataToSend.append('profilePhoto', formData.profilePhoto);
-  }
-
-  // 3. Forcer removePhoto selon le state
-  formDataToSend.append('removePhoto', removePhoto ? "true" : "false");
-
-  // 4. Envoyer
-  onUpdate(employe._id, formDataToSend);
-};
-*/
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const dataToSend = {
@@ -288,8 +268,35 @@ const handleSubmit = (e) => {
     setFormData((prev) => ({
       ...prev,
       profilePhoto: null,
-      removePhoto: "true", // Envoyer "true" comme string pour le backend
+      removePhoto: "true",
     }));
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(
+        `http://localhost:5001/api/admin/employees/resetPassword/${employe._id}`,
+        { newPassword },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setResetPasswordMessage("Mot de passe réinitialisé avec succès");
+      setResetPasswordError("");
+      setNewPassword("");
+      setTimeout(() => {
+        setShowResetPassword(false);
+        setResetPasswordMessage("");
+      }, 2000);
+    } catch (error) {
+      setResetPasswordError(
+        error.response?.data?.message || "Erreur lors de la réinitialisation"
+      );
+      setResetPasswordMessage("");
+    }
   };
 
   if (!employe) return null;
@@ -330,7 +337,6 @@ const handleSubmit = (e) => {
               {preview ? "Changer la photo" : "Ajouter une photo"}
             </button>
 
-            {/* Ajoutez ce bouton conditionnel */}
             {preview && (
               <button
                 type="button"
@@ -405,6 +411,45 @@ const handleSubmit = (e) => {
             />
           </div>
 
+          <div className="reset-password-section">
+            <button
+              type="button"
+              className="reset-password-btn"
+              onClick={() => setShowResetPassword(!showResetPassword)}
+            >
+              <FiKey className="reset-icon" />
+              {showResetPassword ? "Masquer" : "Réinitialiser le mot de passe"}
+            </button>
+
+            {showResetPassword && (
+              <div className="reset-password-form">
+                <div className="form-group">
+                  <FiKey className="input-icon" />
+                  <input
+                    type="password"
+                    placeholder="Nouveau mot de passe"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="submit-reset-btn"
+                  onClick={handleResetPassword}
+                >
+                  Confirmer la réinitialisation
+                </button>
+                {resetPasswordMessage && (
+                  <p className="reset-success">{resetPasswordMessage}</p>
+                )}
+                {resetPasswordError && (
+                  <p className="reset-error">{resetPasswordError}</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="form-actions">
             <button type="button" className="cancel-btn" onClick={onClose}>
               Annuler
@@ -418,4 +463,5 @@ const handleSubmit = (e) => {
     </div>
   );
 };
+
 export default EmployeUpdate;

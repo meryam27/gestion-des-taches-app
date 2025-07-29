@@ -15,8 +15,8 @@ const TaskEditForm = ({
     type: taskToEdit.type,
     status: taskToEdit.status,
     deadline: taskToEdit.deadline || "",
-    projectId: taskToEdit.project?._id || "",
-    assignedToId: taskToEdit.assignedTo?._id || "",
+    projectId: taskToEdit.project?._id || null,
+    assignedToId: taskToEdit.assignedTo?._id || null,
     progress: taskToEdit.progress || 0,
     intervention: taskToEdit.intervention || "on_site",
   });
@@ -140,9 +140,8 @@ const TaskEditForm = ({
           name="projectId"
           value={taskData.projectId}
           onChange={handleChange}
-          required
         >
-          <option value="">--Séléctionner un projet--</option>
+          {/* <option value="">--Séléctionner un projet--</option> */}
           {projects.map((project) => (
             <option key={project._id} value={project._id}>
               {project.name}
@@ -155,9 +154,8 @@ const TaskEditForm = ({
           name="assignedToId"
           value={taskData.assignedToId}
           onChange={handleChange}
-          required
         >
-          <option value="">--Séléctionner un employé--</option>
+          {/* <option value="">--Séléctionner un employé--</option> */}
 
           {users.map((user) => (
             <option key={user._id} value={user._id}>

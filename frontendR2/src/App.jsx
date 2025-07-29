@@ -2,7 +2,6 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import { Navigate } from "react-router-dom";
 import DashboardEmploye from "./pages/employe/DashboardEmploye";
-import Projets from "./pages/employe/Projets";
 import Taches from "./pages/employe/Taches";
 import Prioritaires from "./pages/employe/Prioritaires";
 import Profil from "./pages/employe/Profil";
@@ -14,13 +13,15 @@ import ProjetsAdmin from "./pages/admin/ProjetsAdmin";
 import Employes from "./pages/admin/Employes";
 import ProfilPage from "./pages/admin/ProfilPage";
 import TasksPage from "./pages/admin/TasksPage";
+import NavbarEmploye from "./components/employe/NavbarEmploye";
+import ProjectEmployePage from "./pages/employe/ProjectEmployePage";
 function App() {
   const role = localStorage.getItem("role");
   const location = useLocation();
   const path = location.pathname;
   return (
     <>
-      {role === "employe" &&
+      {role === "employee" &&
         (path == "/employe/dashboard" ||
           path == "/employe/projets" ||
           path == "/employe/taches" ||
@@ -39,7 +40,7 @@ function App() {
           path="/employe/dashboard"
           element={
             <>
-              <ProtectedRoute role="employe">
+              <ProtectedRoute role="employee">
                 <DashboardEmploye />
               </ProtectedRoute>
             </>
@@ -49,8 +50,8 @@ function App() {
           path="/employe/projets"
           element={
             <>
-              <ProtectedRoute role="employe">
-                <Projets />
+              <ProtectedRoute role="employee">
+                <ProjectEmployePage />
               </ProtectedRoute>
             </>
           }
@@ -59,7 +60,7 @@ function App() {
           path="/employe/taches"
           element={
             <>
-              <ProtectedRoute role="employe">
+              <ProtectedRoute role="employee">
                 <Taches />
               </ProtectedRoute>
             </>
@@ -69,7 +70,7 @@ function App() {
           path="/employe/prioritaires"
           element={
             <>
-              <ProtectedRoute role="employe">
+              <ProtectedRoute role="employee">
                 <Prioritaires />
               </ProtectedRoute>
             </>
@@ -79,7 +80,7 @@ function App() {
           path="/employe/profil"
           element={
             <>
-              <ProtectedRoute role="employe">
+              <ProtectedRoute role="employee">
                 <Profil />
               </ProtectedRoute>
             </>
