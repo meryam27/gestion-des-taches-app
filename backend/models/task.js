@@ -54,6 +54,10 @@ const taskSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  isFavorite: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Ajoutez ceci après la définition de taskSchema
