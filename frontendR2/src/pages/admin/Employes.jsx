@@ -35,6 +35,7 @@ const Employes = () => {
       );
       setEmployes(response.data);
       setFilteredEmployes(response.data);
+      console.log("la réponse de employees", response.data);
     } catch (err) {
       console.error("Error fetching employes:", err);
     }

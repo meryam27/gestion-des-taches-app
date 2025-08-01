@@ -1,50 +1,39 @@
-///////////////////
-import React, { useState, useEffect } from "react";
-import TaskEmployeCard from "../../components/employe/TaskEmployeCard.jsx";
-import { FiSearch, FiPlus } from "react-icons/fi";
-import TaskEmployeForm from "../../components/employe/TaskEmployeForm.jsx";
-import TaskEmployeUpdate from "../../components/employe/TaskEmployeUpdate.jsx";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-
-const Taches = () => {
-  const [tasks, setTasks] = useState([]);
+import FavoritesComp from "../../components/employe/FavoritesComp";
+import { FiSearch } from "react-icons/fi";
+const Favorites = () => {
+  const [tasksFav, setTasksFav] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState("Toutes");
   const [projectFilter, setProjectFilter] = useState("Tous");
-  const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [projects, setProjects] = useState([]);
-
-  const fetchTasks = async () => {
+  const fetchFav = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5001/api/employee/tasks/",
+      const res = await axios.get(
+        "http://localhost:5001/api/employee/tasks/favorites",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      if (!response.ok) {
-        throw new Error("Erreur lors de la récupération des tâches");
-      }
-      const data = await response.json();
-      setTasks(data);
-      setFilteredTasks(data);
-    } catch (err) {
-      setError(err.message);
+      setTasksFav(res.data);
+      setFilteredTasks(res.data);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    fetchFav();
+  }, [tasksFav]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,7 +52,7 @@ const Taches = () => {
   }, []);
 
   useEffect(() => {
-    let result = tasks;
+    let result = tasksFav;
 
     if (searchTerm.trim() !== "") {
       const lowerSearch = searchTerm.toLowerCase();
@@ -85,12 +74,7 @@ const Taches = () => {
     }
 
     setFilteredTasks(result);
-  }, [searchTerm, statusFilter, projectFilter, tasks]);
-
-  const handelTaskAdd = async () => {
-    setShowModal(false);
-    fetchTasks();
-  };
+  }, [searchTerm, statusFilter, projectFilter, tasksFav]);
 
   const handelDelete = async (id) => {
     try {
@@ -102,7 +86,7 @@ const Taches = () => {
           },
         }
       );
-      setTasks((prev) => prev.filter((task) => task._id != id));
+      setTasksFav((prev) => prev.filter((task) => task._id != id));
       setFilteredTasks((prev) => prev.filter((task) => task._id != id));
     } catch (error) {
       console.log("erreur lors de la suppression des taches ", error);
@@ -115,7 +99,7 @@ const Taches = () => {
   };
 
   const handleUpdateTask = (updatedTask) => {
-    setTasks((prevTasks) =>
+    setTasksFav((prevTasks) =>
       prevTasks.map((task) =>
         task._id === updatedTask._id ? updatedTask : task
       )
@@ -130,23 +114,14 @@ const Taches = () => {
 
   // Récupérer les valeurs uniques pour les filtres dynamiques
   const uniqueProjects = [
-    ...new Set(tasks.map((task) => task.project?.name).filter(Boolean)),
+    ...new Set(tasksFav.map((task) => task.project?.name).filter(Boolean)),
   ];
 
   return (
     <div className="tasks-page-container">
       <main className="tasks-main-content">
         <div className="header-section">
-          <h1 className="projet-page-title">Tâches</h1>
-
-          <button
-            className="add-employee-btn"
-            onClick={() => setShowModal(true)}
-            style={{ fontSize: "1.4rem" }}
-          >
-            <FiPlus className="add-icon" style={{ fontSize: "1.8rem" }} />
-            Ajouter une tâche
-          </button>
+          <h1 className="projet-page-title">Tâches Favorites</h1>
         </div>
         <div className="search-filter-container">
           <div className="search-wrapper">
@@ -201,22 +176,13 @@ const Taches = () => {
         ) : error ? (
           <div className="error-message">{error}</div>
         ) : (
-          <TaskEmployeCard
-            tasks={filteredTasks}
+          <FavoritesComp
+            favoritesTasks={filteredTasks}
             handelDelete={handelDelete}
             onEditTask={handleEditTask}
           />
         )}
       </main>
-
-      {showModal && (
-        <TaskEmployeForm
-          projects={projects}
-          onAddTask={handelTaskAdd}
-          onClose={() => setShowModal(false)}
-        />
-      )}
-
       {showEditModal && taskToEdit && (
         <TaskEmployeUpdate
           taskToEdit={taskToEdit}
@@ -229,4 +195,4 @@ const Taches = () => {
   );
 };
 
-export default Taches;
+export default Favorites;

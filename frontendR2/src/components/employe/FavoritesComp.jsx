@@ -1,18 +1,29 @@
-import React from "react";
-import { FaTag, FaBatteryThreeQuarters, FaMapMarkerAlt } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import {
+  FaTag,
+  FaBatteryThreeQuarters,
+  FaMapMarkerAlt,
+  FaStar,
+  FaRegStar,
+} from "react-icons/fa";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
-import "./TaskCard.css";
 import defaultProjectLogo from "../../assets/images/project-default.jpg";
 import defaultProfil from "../../assets/images/profil-default.jpeg";
 import { MdAccessTime } from "react-icons/md";
 import axios from "axios";
 
-const TaskCard = ({ tasks, handelDelete, onEditTask }) => {
+const FavoritesComp = ({ favoritesTasks, handelDelete, onEditTask }) => {
+  const [localTasks, setLocalTasks] = useState([]);
+
+  useEffect(() => {
+    setLocalTasks(favoritesTasks);
+  }, [favoritesTasks]);
+
   const formatDate = (dateString) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
     return new Date(dateString).toLocaleDateString("fr-FR", options);
   };
-  console.log("j", tasks);
+
   const getInterventionIcon = (type) => {
     switch (type) {
       case "on_site":
@@ -62,34 +73,51 @@ const TaskCard = ({ tasks, handelDelete, onEditTask }) => {
   };
 
   const handelDeleteClick = async (id) => {
-    if (window.confirm("Voulez vous vraiment supprimer la tache ?")) {
+    if (window.confirm("Voulez-vous vraiment supprimer la tâche ?")) {
       handelDelete(id);
     }
-    return;
   };
-  console.log("task", tasks);
+
+  const toggleFavorite = async (taskId) => {
+    const updatedTasks = localTasks.map((task) =>
+      task._id === taskId ? { ...task, isFavorite: !task.isFavorite } : task
+    );
+    setLocalTasks(updatedTasks);
+
+    // (Optionnel) Envoie vers le backend
+    try {
+      await axios.post(
+        `http://localhost:5001/api/employee/tasks/${taskId}/toggle-favorite`,
+        {}, // car dans request
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du favori :", error);
+    }
+  };
+
   return (
     <div className="task-cards-container">
-      {tasks.map((task) => (
+      {localTasks.map((task) => (
         <div
           key={task._id}
           className={`task-card ${task.status?.status} priority-${task.project?.priority}`}
         >
           <div className="task-card-header">
             <div className="project-info">
-              {task.project.logo ? (
-                <img
-                  src={task.project.logo}
-                  alt="logo"
-                  className="project-logo"
-                />
-              ) : (
-                <img
-                  src={defaultProjectLogo}
-                  alt="logo"
-                  className="project-logo"
-                />
-              )}
+              <img
+                src={
+                  task.project.logo
+                    ? `http://localhost:5001/public/${task.project.logo}`
+                    : defaultProjectLogo
+                }
+                alt="logo"
+                className="project-logo"
+              />
               <div>
                 <h3 className="project-name">{task.project?.name}</h3>
                 <span className="company-name">{task.project?.company}</span>
@@ -97,6 +125,28 @@ const TaskCard = ({ tasks, handelDelete, onEditTask }) => {
             </div>
 
             <div className="task-header-right">
+              <button
+                type="button"
+                style={{
+                  cursor: "pointer",
+                  border: "none",
+                  backgroundColor: "transparent",
+                }}
+                onClick={() => toggleFavorite(task._id)}
+              >
+                {task.isFavorite ? (
+                  <FaStar
+                    size={18}
+                    style={{ marginRight: "3rem", color: "gold" }}
+                  />
+                ) : (
+                  <FaRegStar
+                    size={18}
+                    style={{ marginRight: "3rem", color: "gray" }}
+                  />
+                )}
+              </button>
+
               <div className={`task-priority ${task.project?.priority}`}>
                 {task.project?.priority?.toUpperCase()}
               </div>
@@ -163,7 +213,7 @@ const TaskCard = ({ tasks, handelDelete, onEditTask }) => {
               <div className="assigned-user">
                 {task.assignedTo.profilePhoto ? (
                   <img
-                    src={task.assignedTo.profilePhoto}
+                    src={`http://localhost:5001/public/${task.assignedTo.profilePhoto}`}
                     alt={task.assignedTo.name}
                     className="user-avatar"
                   />
@@ -182,7 +232,26 @@ const TaskCard = ({ tasks, handelDelete, onEditTask }) => {
                 </div>
               </div>
             )}
-
+            <div>
+              <span
+                style={{
+                  fontSize: "1.4rem",
+                  fontWeight: "500",
+                  marginRight: "1.2rem",
+                }}
+              >
+                Crée par :{" "}
+              </span>
+              <span
+                style={{
+                  fontSize: "1.2rem",
+                  fontWeight: "300",
+                  marginRight: "1.2rem",
+                }}
+              >
+                {task.createdBy.name}
+              </span>
+            </div>
             <div className={`task-status ${task.status}`}>
               {task.status?.toUpperCase()}
             </div>
@@ -198,4 +267,4 @@ const TaskCard = ({ tasks, handelDelete, onEditTask }) => {
   );
 };
 
-export default TaskCard;
+export default FavoritesComp;

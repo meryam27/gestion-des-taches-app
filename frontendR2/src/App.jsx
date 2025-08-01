@@ -1,10 +1,10 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 import { Navigate } from "react-router-dom";
-import DashboardEmploye from "./pages/employe/DashboardEmploye";
+import StatsPage from "./pages/employe/StatsPage";
 import Taches from "./pages/employe/Taches";
-import Prioritaires from "./pages/employe/Prioritaires";
-import Profil from "./pages/employe/Profil";
+import Favorites from "./pages/employe/Favorites";
+import Profil from "./pages/employe/ProfilPage";
 import Login from "./pages/login";
 import NavbarAdmin from "./components/admin/NavbarAdmin";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -25,7 +25,7 @@ function App() {
         (path == "/employe/dashboard" ||
           path == "/employe/projets" ||
           path == "/employe/taches" ||
-          path == "/employe/prioritaires" ||
+          path == "/employe/favorites" ||
           path == "/employe/profil") && <NavbarEmploye />}
       {role === "admin" &&
         (path == "/admin/dashboard" ||
@@ -41,7 +41,7 @@ function App() {
           element={
             <>
               <ProtectedRoute role="employee">
-                <DashboardEmploye />
+                <StatsPage />
               </ProtectedRoute>
             </>
           }
@@ -67,11 +67,11 @@ function App() {
           }
         />
         <Route
-          path="/employe/prioritaires"
+          path="/employe/favorites"
           element={
             <>
               <ProtectedRoute role="employee">
-                <Prioritaires />
+                <Favorites />
               </ProtectedRoute>
             </>
           }

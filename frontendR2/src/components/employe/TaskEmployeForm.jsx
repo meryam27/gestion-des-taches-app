@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { FiX } from "react-icons/fi";
 import axios from "axios";
-import styles from "./TaskAddForm.module.css";
+import styles from "../../pages/admin/TaskAddForm.module.css";
+import { FiX } from "react-icons/fi";
 const initialState = {
   title: "",
   description: "",
   type: "daily",
   status: "pending",
-  deadline: undefined,
   projectId: null,
   assignedToId: null,
   progress: 0,
   intervention: "on_site",
 };
 
-const TaskAddForm = ({ onTaskAdded, onClose }) => {
+const TaskEmployeForm = ({ onTaskAdded, onClose }) => {
   const [taskData, setTaskData] = useState({
     title: "",
     description: "",
     type: "daily",
     status: "pending",
-    deadline: undefined,
     projectId: null,
     assignedToId: null,
     progress: 0,
@@ -28,32 +26,19 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
   });
 
   const [projects, setProjects] = useState([]);
-  const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (taskData.type !== "long") {
-      setTaskData((prev) => ({ ...prev, deadline: "" }));
-    }
-  }, [taskData.type]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [projectsRes, usersRes] = await Promise.all([
-          axios.get(`http://localhost:5001/api/admin/projects/cards`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }),
-          axios.get(`http://localhost:5001/api/admin/employees/`, {
+        const [projectsRes] = await Promise.all([
+          axios.get(`http://localhost:5001/api/employee/projects/`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }),
         ]);
         setProjects(projectsRes.data);
-        setUsers(usersRes.data);
       } catch (err) {
         setError("Erreur de chargement des données.");
         console.error(err);
@@ -75,20 +60,16 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
     e.preventDefault();
     setError("");
 
-    if (!taskData.title || !taskData.type || !taskData.projectId) {
+    if (!taskData.title || !taskData.projectId) {
       setError("Veuillez remplir tous les champs obligatoires.");
       return;
     }
 
-    if (taskData.type === "long" && !taskData.deadline) {
-      setError("Veuillez spécifier une deadline pour les tâches longues.");
-      return;
-    }
     console.log("Task data envoyée :", taskData);
 
     try {
       const response = await axios.post(
-        `http://localhost:5001/api/admin/tasks/create`,
+        `http://localhost:5001/api/employee/tasks/create`,
         taskData, // envoie l'objet JSON
         {
           headers: {
@@ -106,7 +87,6 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
         description: "",
         type: "daily",
         status: "pending",
-        deadline: undefined,
         projectId: null,
         assignedToId: null,
         progress: 0,
@@ -121,20 +101,28 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
 
   return (
     <form className={styles.addTaskForm} onSubmit={handleSubmit}>
-      <h2 style={{ fontSize: "1.7rem", color: "rgba(80, 80, 84, 1)" }}>
-        Ajouter une tâche
-      </h2>
-      <FiX
-        size={18}
+      <div
         style={{
-          color: "rgba(80, 80, 84, 1)",
-          position: "absolute",
-          left: "24.5rem",
-          top: "2.2rem",
-          cursor: "pointer",
+          display: "flex",
+          gap: "1rem",
+          alignItems: "center",
         }}
-        onClick={onClose}
-      />
+      >
+        <h2 style={{ fontSize: "1.7rem", color: "rgba(80, 80, 84, 1)" }}>
+          Ajouter une tâche Pour Moi
+        </h2>
+        <FiX
+          size={18}
+          style={{
+            color: "rgba(80, 80, 84, 1)",
+            position: "absolute",
+            left: "24.5rem",
+            top: "2.2rem",
+            cursor: "pointer",
+          }}
+          onClick={onClose}
+        />
+      </div>
 
       {error && <div className={styles.errorMessage}>{error}</div>}
 
@@ -162,21 +150,7 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
         required
       >
         <option value="daily">Journalier</option>
-        <option value="long">Long terme</option>
       </select>
-
-      {taskData.type === "long" && (
-        <>
-          <label>Deadline *</label>
-          <input
-            type="date"
-            name="deadline"
-            value={taskData.deadline}
-            onChange={handleChange}
-            required
-          />
-        </>
-      )}
 
       <label>Statut</label>
       <select name="status" value={taskData.status} onChange={handleChange}>
@@ -197,20 +171,6 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
         {projects.map((project) => (
           <option key={project._id} value={project._id}>
             {project.name}
-          </option>
-        ))}
-      </select>
-
-      <label>Employé assigné</label>
-      <select
-        name="assignedToId"
-        value={taskData.assignedToId}
-        onChange={handleChange}
-      >
-        <option value="">-- Aucun --</option>
-        {users.map((user) => (
-          <option key={user._id} value={user._id}>
-            {user.name}
           </option>
         ))}
       </select>
@@ -244,4 +204,4 @@ const TaskAddForm = ({ onTaskAdded, onClose }) => {
   );
 };
 
-export default TaskAddForm;
+export default TaskEmployeForm;

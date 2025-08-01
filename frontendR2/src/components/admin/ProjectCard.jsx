@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import "./ProjectCard.css";
+
 import defaultProject from "../../assets/images/project-default.jpg";
 import defaultProfil from "../../assets/images/profil-default.jpeg";
 import ProjectModal from "./ProjectModel";
 import { FiTrash2, FiEdit } from "react-icons/fi";
-
+import "./ProjectCard.css";
 const ProjectCard = ({ project, onDelete, handelEditClick }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 

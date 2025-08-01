@@ -19,7 +19,8 @@ html {
   min-height: 34rem;
   background: white;
   border-radius: 1.8rem;
-  padding: 2rem;
+  padding: 1rem;
+  padding-top: 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -51,9 +52,8 @@ html {
 .project-card-header {
   display: flex;
   align-items: center;
-  gap: 1.6rem;
+  gap: 1.1rem;
   position: relative;
-  padding-right: 4rem; /* Espace pour les actions */
 }
 
 .project-logo {
@@ -65,7 +65,7 @@ html {
   box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   background: white;
-  padding: 0.4rem;
+  padding: 0.1rem;
 }
 
 .project-card:hover .project-logo {
@@ -119,15 +119,15 @@ html {
 }
 
 .project-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   opacity: 0;
   transform: translateY(-0.5rem);
   transition: all 0.3s ease;
+  position: absolute;
+  top: 10rem;
+  right: 0;
 }
 
 .project-card:hover .project-actions {
