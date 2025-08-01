@@ -11,18 +11,17 @@ const {
 router.put(
   "/update/:id",
   authMiddleware,
-  roleMiddleware.roleMiddleware("admin","manager"),
+  roleMiddleware.roleMiddleware("admin", "manager"),
   uploadProjectLogo,
   processProjectLogo,
   crudProjectController.updateProject
 );
 
-
 // Nouvelle endpoint spécial cartes
 router.get(
   "/cards",
   authMiddleware,
-  roleMiddleware.roleMiddleware("admin","manager"),
+  roleMiddleware.roleMiddleware("admin", "manager"),
   crudProjectController.getAllProjectsForCards
 );
 
@@ -33,7 +32,6 @@ router.post(
   roleMiddleware.roleMiddleware("admin"),
   crudProjectController.createProject
 );
-
 
 // Suppression d'un projet proteger seuelement pour admin
 router.delete(
@@ -46,8 +44,7 @@ router.delete(
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware.roleMiddleware("admin","manager"),
+  roleMiddleware.roleMiddleware("admin", "manager"),
   crudProjectController.getProjectDetails
 );
-
 module.exports = router;

@@ -17,6 +17,7 @@ const taskEmployeRoute = require("./routes/employee/task.routes");
 const getEmployeTask = require("./routes/employee/task.routes");
 const getUsersStats = require("./routes/employee/dashboard_employee.routes");
 const app = express();
+app.use(express.urlencoded({ extended: true }));
 
 dotenv.config();
 connectDB();
@@ -31,12 +32,11 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/admin/projects", projectRoutes); //aussi pour ajouter un projet
 app.use("/api/admin/employees", employeesRoutes);
 app.use("/api/admin/tasks", tasksRoutes);
-app.use("/api/employee", employeDashboard);
 app.use("/public", express.static("public"));
 //////////////ESPACE EMPLOYE ///////////////////////////
 app.use("/api/employee/dashboard", getUsersStats);
 app.use("/api/employee/projects", projectEmployeRoute);
 app.use("/api/employee/tasks", taskEmployeRoute);
-app.use("/api/employee/tasks", getEmployeTask);
+// app.use("/api/employee/tasks", getEmployeTask);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Serveur démarré sur le port ${PORT}`));

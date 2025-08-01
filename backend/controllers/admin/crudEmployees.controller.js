@@ -14,11 +14,12 @@ const {
 
 exports.getAllEmployeesWithProjects = async (req, res) => {
   try {
-    const employees = await User.find({  $or: [
-    { role: "employee" },
-    { role: "manager" }
-  ]})
-      .select(" _id name position profilePhoto profilePhotoThumb email cin role ") // Ajout de profilePhotoThumb
+    const employees = await User.find({
+      $or: [{ role: "employee" }, { role: "manager" }],
+    })
+      .select(
+        " _id name position profilePhoto profilePhotoThumb email cin role "
+      ) // Ajout de profilePhotoThumb
       .lean();
 
     const employeesWithProjects = await Promise.all(
@@ -62,7 +63,9 @@ exports.getEmployeeDetails = async (req, res) => {
 
     // Récupérer les détails de l'employé
     const employee = await User.findById(employeeId)
-      .select(" _id name position email cin profilePhoto profilePhotoThumb role")
+      .select(
+        " _id name position email cin profilePhoto profilePhotoThumb role"
+      )
       .lean();
 
     if (!employee) {
@@ -71,7 +74,9 @@ exports.getEmployeeDetails = async (req, res) => {
 
     // Récupérer les projets assignés avec plus de détails
     const projects = await Project.find({ assignedEmployees: employeeId })
-      .select("name company priority logo thumbnail")
+      .select(
+        "_id name company priority status priority progression assignedEmployees logo thumbnail"
+      )
       .lean();
 
     // Formater la réponse
@@ -86,15 +91,16 @@ exports.getEmployeeDetails = async (req, res) => {
           : null,
       },
       projects: projects.map((project) => ({
+        _id: project._id,
         name: project.name,
         company: project.company,
         priority: project.priority,
-        logo: project.logo
-          ? baseUrl + "uploads/projects/originals/" + project.logo
-          : null,
-        thumbnail: project.thumbnail
-          ? baseUrl + "uploads/projects/thumbnails/" + project.thumbnail
-          : null,
+        status: project.status,
+        priority: project.priority,
+        assignedEmployees: project.assignedEmployees || [],
+        progression: project.progression,
+        logo: project.logo ? baseUrl + project.logo : null,
+        thumbnail: project.thumbnail ? baseUrl + project.thumbnail : null,
       })),
     };
 
@@ -274,13 +280,13 @@ exports.updateEmployee = asyncHandler(async (req, res) => {
 
   // Préparer les updates
   const updates = {
-    name: req.body.name || employee.name ? employee.name : "",
+    name: req.body.name,
     email: req.body.email || employee.email,
     position: req.body.position || employee.position,
     cin: req.body.cin || employee.cin,
     role: req.body.role || employee.role,
     removePhoto: req.body.removePhoto === "true" ? true : false,
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
   // Gestion de la suppression des anciennes photos
@@ -343,7 +349,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Employé non trouvé" });
   }
 
-  employee.password=newPassword;
+  employee.password = newPassword;
 
   await employee.save();
 
@@ -351,4 +357,3 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     message: "Mot de passe réinitialisé avec succès",
   });
 });
-

@@ -80,10 +80,7 @@ exports.createProject = async (req, res) => {
         if (assignedEmployeesCINs?.length > 0) {
           const employees = await User.find({
             cin: { $in: assignedEmployeesCINs },
-             $or: [
-              { role: "employee" },
-              { role: "manager" }
-            ]
+            $or: [{ role: "employee" }, { role: "manager" }],
           }).select("_id cin");
 
           if (employees.length !== assignedEmployeesCINs.length) {
@@ -156,7 +153,7 @@ exports.getAllProjectsForCards = async (req, res) => {
         thumbnailUrl,
         assignedEmployees:
           project.assignedEmployees?.map((emp) => ({
-            _id:emp._id,
+            _id: emp._id,
             name: emp.name,
             position: emp.position,
             profilePhoto: emp.profilePhoto
@@ -184,8 +181,8 @@ exports.getProjectDetails = async (req, res) => {
       .populate({
         path: "assignedEmployees",
         select: " _id name profilePhoto profilePhotoThumb position cin email",
-          match: { role: { $in: ["employee", "manager"] } },
-              })
+        match: { role: { $in: ["employee", "manager"] } },
+      })
       .select("-__v -createdAt")
       .lean();
 
@@ -196,7 +193,7 @@ exports.getProjectDetails = async (req, res) => {
       });
     }
 
-    const baseUrl = `${req.protocol}://${req.get("host")}/public`;
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
 
     // Formatage des dates
     project.startDate = project.startDate?.toISOString().split("T")[0];
@@ -231,8 +228,6 @@ exports.getProjectDetails = async (req, res) => {
   }
 };
 
-
-
 exports.updateProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -261,11 +256,15 @@ exports.updateProject = async (req, res) => {
     const project = await Project.findById(id);
     if (!project) {
       if (req.file) fs.unlinkSync(req.file.path);
-      return res.status(404).json({ success: false, message: "Projet non trouvé" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Projet non trouvé" });
     }
 
     const oldLogo = project.logo ? path.join("public", project.logo) : null;
-    const oldThumbnail = project.thumbnail ? path.join("public", project.thumbnail) : null;
+    const oldThumbnail = project.thumbnail
+      ? path.join("public", project.thumbnail)
+      : null;
 
     // Mise à jour des champs
     project.name = name || project.name;
@@ -295,8 +294,8 @@ exports.updateProject = async (req, res) => {
       if (assignedEmployeesIds.length > 0) {
         // Nettoyer les IDs invalides (null, undefined, chaîne vide)
         const cleanedEmployeeIds = assignedEmployeesIds
-          .filter(id => id)
-          .filter(id => mongoose.Types.ObjectId.isValid(id));
+          .filter((id) => id)
+          .filter((id) => mongoose.Types.ObjectId.isValid(id));
 
         if (cleanedEmployeeIds.length !== assignedEmployeesIds.length) {
           if (req.file) fs.unlinkSync(req.file.path);
@@ -309,26 +308,26 @@ exports.updateProject = async (req, res) => {
         // Rechercher les employés avec les rôles acceptés
         const employees = await User.find({
           _id: { $in: cleanedEmployeeIds },
-          $or: [
-              { role: "employee" },
-              { role: "manager" }
-            ]
-     // role: { $in: ["employee", "manager"] },
-        })    .select("_id");
+          $or: [{ role: "employee" }, { role: "manager" }],
+          // role: { $in: ["employee", "manager"] },
+        }).select("_id");
 
-        const foundIds = employees.map(emp => emp._id.toString());
-        const missingIds = cleanedEmployeeIds.filter(id => !foundIds.includes(id));
+        const foundIds = employees.map((emp) => emp._id.toString());
+        const missingIds = cleanedEmployeeIds.filter(
+          (id) => !foundIds.includes(id)
+        );
 
         if (missingIds.length > 0) {
           if (req.file) fs.unlinkSync(req.file.path);
           return res.status(404).json({
             success: false,
-            message: "Certains utilisateurs assignés n'existent pas ou n'ont pas un rôle valide",
+            message:
+              "Certains utilisateurs assignés n'existent pas ou n'ont pas un rôle valide",
             missingIds,
           });
         }
 
-        project.assignedEmployees = employees.map(emp => emp._id);
+        project.assignedEmployees = employees.map((emp) => emp._id);
       } else {
         project.assignedEmployees = [];
       }
@@ -367,10 +366,6 @@ exports.updateProject = async (req, res) => {
   }
 };
 
-
-
-
-
 exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -386,10 +381,10 @@ exports.deleteProject = async (req, res) => {
 
     // Supprimer les tâches associées
     await Task.deleteMany({ project: id });
-    const oldLogo =path.join("public", project.logo);
+    const oldLogo = path.join("public", project.logo);
     // Supprimer les images du projet
     if (project.logo) {
-     if (fs.existsSync(oldLogo)) fs.unlinkSync(oldLogo);
+      if (fs.existsSync(oldLogo)) fs.unlinkSync(oldLogo);
       // if (project.thumbnail) {
       //   fs.unlinkSync(
       //     path.join("public/uploads/projects/thumbnails", project.thumbnail)

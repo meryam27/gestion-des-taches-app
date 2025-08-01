@@ -38,12 +38,12 @@ exports.getAllTasks = async (req, res) => {
     const formattedTasks = tasks.map((task) => {
       // Chemin complet pour le logo du projet
       const projectLogoPath = task.project?.logo
-        ? `${baseUrl}uploads/projects/originals/${task.project.logo}`
+        ? `${baseUrl}/${task.project.logo}`
         : null;
 
       // Chemin complet pour la photo de profil
       const profilePhotoPath = task.assignedTo?.profilePhoto
-        ? `${baseUrl}uploads/projects/originals/${task.assignedTo.profilePhoto}`
+        ? `${baseUrl}/${task.assignedTo.profilePhoto}`
         : null;
 
       return {
